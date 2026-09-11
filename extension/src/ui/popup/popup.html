@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrivacyShield</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      width: 340px;
+      padding: 14px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e2535;
+      padding-bottom: 10px;
+    }
+    .title { font-size: 15px; font-weight: 700; color: #60a5fa; }
+    .badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #1e3a5f;
+      color: #60a5fa;
+    }
+    .section {
+      background: #161c2d;
+      border-radius: 8px;
+      padding: 11px;
+      margin-bottom: 8px;
+      border: 1px solid #1e2535;
+    }
+    .section-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #1e2535;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 7px;
+      resize: none;
+      height: 52px;
+    }
+    textarea:focus { outline: none; border-color: #60a5fa; }
+    .btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 7px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-green { background: #16a34a; color: #fff; }
+    .btn-green:hover { background: #15803d; }
+    .btn-red { background: #991b1b; color: #f87171; font-size: 11px; }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+    .stat-label { color: #64748b; }
+    .stat-value { font-weight: 600; }
+    .stat-value.good { color: #34d399; }
+    .step-indicator { font-size: 11px; color: #60a5fa; margin-top: 4px; min-height: 15px; }
+    .firewall-ok  { color: #34d399; font-weight: 700; font-size: 11px; text-align: center; padding: 3px; }
+    .firewall-blocked { color: #f87171; font-weight: 700; font-size: 11px; text-align: center; padding: 3px; }
+
+    /* Vault inputs */
+    .vault-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .vault-field label { font-size: 10px; color: #64748b; display: block; margin-bottom: 3px; }
+    .vault-field input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #1e2535;
+      border-radius: 5px;
+      color: #e2e8f0;
+      font-size: 12px;
+      padding: 5px 7px;
+    }
+    .vault-field input:focus { outline: none; border-color: #60a5fa; }
+    .vault-field input[type="password"] { letter-spacing: 0.1em; }
+    .vault-saved { font-size: 10px; color: #34d399; text-align: center; margin-top: 4px; display: none; }
+
+    /* Tab bar */
+    .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+    .tab {
+      flex: 1;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #1e2535;
+      background: #161c2d;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tab.active { background: #1e3a5f; color: #60a5fa; border-color: #2563eb; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span style="font-size:18px">🛡</span>
+    <span class="title">PrivacyShield</span>
+    <span class="badge">ON-DEVICE</span>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tabs">
+    <div class="tab active" id="tab-agent" onclick="switchTab('agent')">Agent</div>
+    <div class="tab" id="tab-vault" onclick="switchTab('vault')">My Vault</div>
+  </div>
+
+  <!-- Agent tab -->
+  <div class="tab-panel active" id="panel-agent">
+    <div class="section">
+      <div class="section-title">Task</div>
+      <textarea id="taskInput" placeholder="e.g. Fill in email and submit the form"></textarea>
+      <button class="btn btn-primary" id="runBtn">▶ RUN AGENT</button>
+      <div class="step-indicator" id="stepIndicator">Idle</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Local Perception</div>
+      <div class="stat-row">
+        <span class="stat-label">PII Detected</span>
+        <span class="stat-value" id="piiDetected">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">PII Redacted</span>
+        <span class="stat-value good" id="piiRedacted">—</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Privacy Firewall</div>
+      <div class="stat-row">
+        <span class="stat-label">Raw PII Leaving Device</span>
+        <span class="stat-value good" id="rawPIISent">0 bytes</span>
+      </div>
+      <div id="firewallStatus" class="firewall-ok">✓ REQUEST ALLOWED</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Last Action</div>
+      <div class="stat-row">
+        <span class="stat-label" id="lastAction" style="word-break:break-all;font-size:11px">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vault tab -->
+  <div class="tab-panel" id="panel-vault">
+    <div class="section">
+      <div class="section-title">
+        My Details
+        <span style="color:#64748b;font-size:10px;font-weight:normal">stored encrypted, never sent</span>
+      </div>
+      <div class="vault-grid">
+        <div class="vault-field">
+          <label>Full Name</label>
+          <input id="v-name" type="text" placeholder="Vedant Ghuge" autocomplete="off" />
+        </div>
+        <div class="vault-field">
+          <label>Email</label>
+          <input id="v-email" type="email" placeholder="you@example.com" autocomplete="off" />
+        </div>
+        <div class="vault-field">
+          <label>Phone</label>
+          <input id="v-phone" type="tel" placeholder="+91 9876543210" autocomplete="off" />
+        </div>
+        <div class="vault-field">
+          <label>Date of Birth</label>
+          <input id="v-dob" type="text" placeholder="YYYY-MM-DD" autocomplete="off" />
+        </div>
+        <div class="vault-field">
+          <label>Password</label>
+          <input id="v-password" type="password" placeholder="••••••••" autocomplete="off" />
+        </div>
+        <div class="vault-field">
+          <label>Aadhaar</label>
+          <input id="v-aadhaar" type="text" placeholder="XXXX XXXX XXXX" autocomplete="off" />
+        </div>
+      </div>
+      <button class="btn btn-green" id="saveVaultBtn" onclick="saveVault()">💾 Save to Local Vault</button>
+      <div class="vault-saved" id="vaultSaved">✓ Saved securely on device</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Danger Zone</div>
+      <button class="btn btn-red" id="clearVaultBtn" onclick="clearVault()">🗑 Clear All Vault Data</button>
+    </div>
+  </div>
+
+  <script type="module" src="./popup.ts"></script>
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+  </script>
+</body>
+</html>

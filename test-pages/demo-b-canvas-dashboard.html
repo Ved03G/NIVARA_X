@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo B — Canvas Dashboard (DOM-insufficient)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+      gap: 24px;
+    }
+    h1 { font-size: 18px; color: #94a3b8; margin: 0; }
+    .notice {
+      background: #1e3a5f;
+      border: 1px solid #2563eb;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12px;
+      color: #93c5fd;
+      max-width: 520px;
+      text-align: center;
+    }
+    canvas { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 10px 24px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-danger { background: #dc2626; color: white; }
+    #domInfo { font-size: 11px; color: #64748b; max-width: 520px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Bank Account Dashboard</h1>
+  <div class="notice">
+    ⚠️ <strong>Demo B:</strong> Critical information is rendered on a &lt;canvas&gt; element.
+    The DOM contains only <code>&lt;canvas id="dashboard"&gt;</code> — no text nodes.
+    Only a vision model + OCR can extract account details from this page.
+  </div>
+
+  <canvas id="dashboard" width="520" height="280"></canvas>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="transferBtn">Initiate Transfer</button>
+    <button class="btn btn-danger" id="logoutBtn">Logout</button>
+  </div>
+
+  <div id="domInfo">
+    DOM inspector: &lt;canvas&gt; contains no readable text children.
+    DOM-only agents cannot extract account holder, account number, balance, IFSC, or phone.
+  </div>
+
+  <script>
+    const canvas = document.getElementById('dashboard');
+    const ctx = canvas.getContext('2d');
+
+    function draw() {
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 520, 280);
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(0, 0, 520, 48);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Inter, system-ui';
+      ctx.fillText('🏦 SecureBank — Account Overview', 16, 30);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('ACCOUNT HOLDER', 24, 75);
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 18px Inter, system-ui';
+      ctx.fillText('VEDANT GHUGE', 24, 98);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('ACCOUNT NUMBER', 24, 130);
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 17px monospace';
+      ctx.fillText('4839 2018 4719 0023', 24, 152);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('AVAILABLE BALANCE', 24, 185);
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 24px Inter, system-ui';
+      ctx.fillText('₹1,25,840.00', 24, 212);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('IFSC CODE', 300, 130);
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('SBIN0001234', 300, 152);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('REGISTERED MOBILE', 300, 185);
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('+91 98765 43210', 300, 207);
+
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, 250, 520, 30);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px Inter, system-ui';
+      ctx.fillText('Last login: Today 09:41 AM  |  Secure Session', 16, 269);
+    }
+
+    draw();
+    document.getElementById('transferBtn').onclick = () => alert('Transfer flow would start here.');
+    document.getElementById('logoutBtn').onclick = () => {
+      document.body.innerHTML = '<div style="color:white;padding:40px">Logged out.</div>';
+    };
+  </script>
+</body>
+</html>

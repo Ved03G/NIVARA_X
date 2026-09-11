@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo A — Scholarship Application Form</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f8fafc;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+    }
+    .logo { font-size: 24px; margin-bottom: 4px; }
+    h1 { font-size: 20px; color: #1e293b; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .notice { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 12px; }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      margin-left: 4px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🎓</div>
+    <h1>National Scholarship Portal</h1>
+    <p class="subtitle">Fill in your details to apply for merit scholarship</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="firstName">First Name <span class="tag">PII</span></label>
+        <input type="text" id="firstName" name="firstName"
+               autocomplete="given-name" placeholder="Vedant" />
+      </div>
+      <div class="field">
+        <label for="lastName">Last Name <span class="tag">PII</span></label>
+        <input type="text" id="lastName" name="lastName"
+               autocomplete="family-name" placeholder="Ghuge" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email Address <span class="tag">PII</span></label>
+      <input type="email" id="email" name="email"
+             autocomplete="email" placeholder="vedant@example.com" />
+    </div>
+
+    <div class="field">
+      <label for="phone">Mobile Number <span class="tag">PII</span></label>
+      <input type="tel" id="phone" name="phone"
+             autocomplete="tel" placeholder="+91 9876543210" />
+    </div>
+
+    <div class="field">
+      <label for="dob">Date of Birth <span class="tag">PII</span></label>
+      <input type="date" id="dob" name="dob" autocomplete="bday" />
+    </div>
+
+    <div class="field">
+      <label for="aadhaar">Aadhaar Number <span class="tag">PII</span></label>
+      <input type="text" id="aadhaar" name="aadhaar"
+             placeholder="XXXX XXXX XXXX" maxlength="14"
+             aria-label="Aadhaar number" />
+    </div>
+
+    <div class="field">
+      <label for="course">Course Applied For</label>
+      <select id="course" name="course">
+        <option value="">Select course...</option>
+        <option value="btech">B.Tech</option>
+        <option value="bsc">B.Sc</option>
+        <option value="mtech">M.Tech</option>
+        <option value="mba">MBA</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="password">Create Password <span class="tag">PII</span></label>
+      <input type="password" id="password" name="password"
+             autocomplete="new-password" placeholder="Min. 8 characters" />
+    </div>
+
+    <button class="btn" type="button" id="submitBtn"
+            onclick="handleSubmit()">Submit Application</button>
+    <p class="notice">🔒 PrivacyShield is active — your data is protected locally</p>
+  </div>
+
+  <script>
+    function handleSubmit() {
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = '✅ Application Submitted!';
+      btn.style.background = '#16a34a';
+    }
+  </script>
+</body>
+</html>

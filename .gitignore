@@ -1,0 +1,25 @@
+# PrivacyShield .gitignore
+node_modules/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models (large binary files)
+*.onnx
+*.ort
+*.bin
+*.pt
+
+# Secrets
+*.pem
+*.key

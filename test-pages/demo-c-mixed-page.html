@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo C — Mixed DOM + Visual Content</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f8fafc;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      padding: 28px;
+      max-width: 540px;
+      width: 100%;
+    }
+    h1 { font-size: 18px; color: #1e293b; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: #64748b; margin-bottom: 20px; }
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      margin: 20px 0 8px;
+    }
+    .id-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    canvas { display: block; width: 100%; }
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input:focus { outline: none; border-color: #3b82f6; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .tag { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #ddd; color: #333; margin-left: 4px; }
+    .tag.visual { background: #fde68a; color: #92400e; }
+    .tag.dom { background: #bfdbfe; color: #1e40af; }
+    .notice { font-size: 11px; color: #64748b; background: #f8fafc; border-radius: 6px; padding: 8px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📋 KYC Verification Portal</h1>
+    <p class="subtitle">Know Your Customer — upload and verify identity documents</p>
+
+    <div class="notice">
+      <strong>Demo C:</strong> This page contains both DOM-structured fields
+      <span class="tag dom">DOM</span> and visually-rendered sensitive information
+      on a canvas ID card <span class="tag visual">VISUAL</span>.
+      PrivacyShield must handle both signal types.
+    </div>
+
+    <div class="section-title">Scanned ID Document <span class="tag visual">Vision required</span></div>
+    <div class="id-card">
+      <canvas id="idCard" width="490" height="170"></canvas>
+    </div>
+
+    <div class="section-title">Personal Details (DOM fields) <span class="tag dom">DOM</span></div>
+
+    <div class="field">
+      <label for="fullName">Full Name (as on ID)</label>
+      <input type="text" id="fullName" name="fullName"
+             autocomplete="name" placeholder="Vedant Ghuge" />
+    </div>
+
+    <div class="field">
+      <label for="email">Email Address <span class="tag dom">PII</span></label>
+      <input type="email" id="email" name="email"
+             autocomplete="email" placeholder="vedant@example.com" />
+    </div>
+
+    <div class="field">
+      <label for="phone">Mobile Number <span class="tag dom">PII</span></label>
+      <input type="tel" id="phone" name="phone"
+             autocomplete="tel" placeholder="+91 9876543210" />
+    </div>
+
+    <button class="btn" type="button" id="verifyBtn">Verify Identity</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('idCard');
+    const ctx = canvas.getContext('2d');
+
+    function drawIDCard() {
+      const grad = ctx.createLinearGradient(0, 0, 490, 0);
+      grad.addColorStop(0, '#1e3a8a');
+      grad.addColorStop(1, '#1d4ed8');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 490, 170);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px Inter, system-ui';
+      ctx.fillText('🇮🇳 GOVERNMENT OF INDIA', 16, 24);
+      ctx.fillStyle = '#93c5fd';
+      ctx.font = '10px Inter, system-ui';
+      ctx.fillText('UNIQUE IDENTIFICATION AUTHORITY OF INDIA', 16, 40);
+
+      // Face placeholder (face detector should flag this region)
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(16, 54, 70, 90);
+      ctx.fillStyle = '#93c5fd';
+      ctx.font = '28px Arial';
+      ctx.fillText('👤', 23, 110);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Inter, system-ui';
+      ctx.fillText('NAME', 105, 68);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 15px Inter, system-ui';
+      ctx.fillText('VEDANT RAMESH GHUGE', 105, 86);
+
+      // Aadhaar — PII, visual only
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Inter, system-ui';
+      ctx.fillText('AADHAAR NO.', 105, 108);
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText('7823 4561 9034', 105, 126);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Inter, system-ui';
+      ctx.fillText('DATE OF BIRTH', 105, 148);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px Inter, system-ui';
+      ctx.fillText('12 / 05 / 2005', 105, 164);
+
+      // Barcode (right side)
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(360, 55, 115, 100);
+      for (let i = 0; i < 20; i++) {
+        ctx.fillStyle = i % 3 === 0 ? '#94a3b8' : '#1e293b';
+        ctx.fillRect(365 + i * 5, 60, i % 2 === 0 ? 4 : 2, 85);
+      }
+    }
+
+    drawIDCard();
+
+    document.getElementById('verifyBtn').onclick = () => {
+      const btn = document.getElementById('verifyBtn');
+      btn.textContent = '✅ Identity Verified';
+      btn.style.background = '#16a34a';
+    };
+  </script>
+</body>
+</html>
