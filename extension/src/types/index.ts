@@ -28,7 +28,10 @@ export type PIICategory =
   | 'DATE_OF_BIRTH'
   | 'FACE'
   | 'FINANCIAL_DATA'
-  | 'AUTH_TOKEN';
+  | 'AUTH_TOKEN'
+  | 'ACCOUNT_NUMBER'
+  | 'BALANCE'
+  | 'IFSC';
 
 export interface PIIDetection {
   category: PIICategory;
@@ -57,6 +60,7 @@ export interface MappedElement {
   placeholder?: string;
   disabled: boolean;
   visible: boolean;
+  hasValue?: boolean;
   rect: { x: number; y: number; width: number; height: number };
 }
 
@@ -66,16 +70,22 @@ export interface SanitizedContext {
   task: string;
   elements: MappedElement[];
   redactionContract: RedactionToken[];
-  screenshotB64?: string;   // after redaction/blurring
-  pageUrl: string;          // domain only — no path params
+  screenshotB64?: string;
+  pageUrl: string;
   timestamp: number;
+  // Runtime fields added by sanitizer (not in original minimal spec)
+  piiDetected: number;
+  piiRedacted: number;
+  rawPIISent: number;
+  canvasOcrText: Array<{ canvasId: string | null; text: string; confidence: number }>;
+  canvasImages: string[];          // base64 JPEG per canvas element
 }
 
 // ─── Server Response ──────────────────────────────────────────────────────────
 
 export interface AgentResponse {
   actions: BrowserAction[];
-  reasoning?: string;       // for debug display
+  reasoning?: string;
   taskComplete: boolean;
 }
 
@@ -108,6 +118,10 @@ export interface AgentStatus {
   rawPIISent: number;
   lastAction?: string;
   error?: string;
+  // DOM-based redaction contract — for token pill display
+  redactionContract?: RedactionToken[];
+  // Canvas/Visual PII tokens detected server-side (e.g. "[ACCOUNT_NUMBER_1]")
+  canvasDetections?: string[];
 }
 
 // ─── Risk tiers ───────────────────────────────────────────────────────────────

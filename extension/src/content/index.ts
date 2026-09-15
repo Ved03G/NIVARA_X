@@ -43,4 +43,4 @@ chrome.runtime.onMessage.addListener((raw, _sender, sendResponse) => {
   return false;
 });
 
-console.log('[PrivacyShield] content script ready on', location.hostname);
+console.log('[Nivara-X] content script ready on', location.hostname);

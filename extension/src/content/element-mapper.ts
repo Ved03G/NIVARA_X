@@ -83,10 +83,34 @@ export function mapInteractiveElements(): MappedElement[] {
         placeholder: (el as HTMLInputElement).placeholder || undefined,
         disabled: (el as HTMLInputElement).disabled ?? false,
         visible: true,
+        hasValue: !!((el as HTMLInputElement).value),
         rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
       });
     });
   }
+
+  // Map intercepted Canvas Text nodes!
+  const canvases = document.querySelectorAll('canvas');
+  canvases.forEach((canvas) => {
+    const rawNodes = canvas.getAttribute('data-nivara-text');
+    if (rawNodes) {
+      try {
+        const nodes = JSON.parse(rawNodes);
+        nodes.forEach((node: any, idx: number) => {
+          elements.push({
+            id: getOrAssignId(canvas) + `_text_${idx}`,
+            role: 'canvas-text',
+            text: node.text,
+            disabled: false,
+            visible: true,
+            rect: { x: Math.round(node.x), y: Math.round(node.y), width: node.text.length * 8, height: 12 },
+          });
+        });
+      } catch (e) {
+        console.error('[Nivara-X] Failed to parse canvas nodes', e);
+      }
+    }
+  });
 
   return elements;
 }

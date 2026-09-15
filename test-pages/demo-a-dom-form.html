@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -58,6 +58,7 @@
       margin-top: 8px;
     }
     .btn:hover { background: #1d4ed8; }
+    .btn.success { background: #16a34a; }
     .notice { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 12px; }
     .tag {
       display: inline-block;
@@ -80,38 +81,49 @@
     <div class="row">
       <div class="field">
         <label for="firstName">First Name <span class="tag">PII</span></label>
+        <!-- aria-label="first name" so pii-detector catches it as PERSON -->
         <input type="text" id="firstName" name="firstName"
-               autocomplete="given-name" placeholder="Vedant" />
+               autocomplete="given-name"
+               aria-label="first name"
+               placeholder="First Name" />
       </div>
       <div class="field">
         <label for="lastName">Last Name <span class="tag">PII</span></label>
         <input type="text" id="lastName" name="lastName"
-               autocomplete="family-name" placeholder="Ghuge" />
+               autocomplete="family-name"
+               aria-label="last name"
+               placeholder="Last Name" />
       </div>
     </div>
 
     <div class="field">
       <label for="email">Email Address <span class="tag">PII</span></label>
       <input type="email" id="email" name="email"
-             autocomplete="email" placeholder="vedant@example.com" />
+             autocomplete="email"
+             aria-label="email address"
+             placeholder="Email Address" />
     </div>
 
     <div class="field">
       <label for="phone">Mobile Number <span class="tag">PII</span></label>
       <input type="tel" id="phone" name="phone"
-             autocomplete="tel" placeholder="+91 9876543210" />
+             autocomplete="tel"
+             aria-label="phone number"
+             placeholder="Mobile Number" />
     </div>
 
     <div class="field">
       <label for="dob">Date of Birth <span class="tag">PII</span></label>
-      <input type="date" id="dob" name="dob" autocomplete="bday" />
+      <input type="date" id="dob" name="dob"
+             autocomplete="bday"
+             aria-label="date of birth" />
     </div>
 
     <div class="field">
       <label for="aadhaar">Aadhaar Number <span class="tag">PII</span></label>
       <input type="text" id="aadhaar" name="aadhaar"
              placeholder="XXXX XXXX XXXX" maxlength="14"
-             aria-label="Aadhaar number" />
+             aria-label="aadhaar number" />
     </div>
 
     <div class="field">
@@ -128,20 +140,21 @@
     <div class="field">
       <label for="password">Create Password <span class="tag">PII</span></label>
       <input type="password" id="password" name="password"
-             autocomplete="new-password" placeholder="Min. 8 characters" />
+             autocomplete="new-password"
+             aria-label="password"
+             placeholder="Min. 8 characters" />
     </div>
 
-    <button class="btn" type="button" id="submitBtn"
-            onclick="handleSubmit()">Submit Application</button>
-    <p class="notice">🔒 PrivacyShield is active — your data is protected locally</p>
+    <button class="btn" type="button" id="submitBtn">Submit Application</button>
+    <p class="notice">🔒 Nivara-X is active — your data is protected locally</p>
   </div>
 
   <script>
-    function handleSubmit() {
-      const btn = document.getElementById('submitBtn');
-      btn.textContent = '✅ Application Submitted!';
-      btn.style.background = '#16a34a';
-    }
+    // No inline onclick — wire here (also works when loaded directly, not via extension)
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      this.textContent = 'Application Submitted!';
+      this.classList.add('success');
+    });
   </script>
 </body>
 </html>

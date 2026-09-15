@@ -80,7 +80,7 @@
       <strong>Demo C:</strong> This page contains both DOM-structured fields
       <span class="tag dom">DOM</span> and visually-rendered sensitive information
       on a canvas ID card <span class="tag visual">VISUAL</span>.
-      PrivacyShield must handle both signal types.
+      Nivara-X must handle both signal types.
     </div>
 
     <div class="section-title">Scanned ID Document <span class="tag visual">Vision required</span></div>
@@ -93,19 +93,25 @@
     <div class="field">
       <label for="fullName">Full Name (as on ID)</label>
       <input type="text" id="fullName" name="fullName"
-             autocomplete="name" placeholder="Vedant Ghuge" />
+             autocomplete="name"
+             aria-label="full name"
+             placeholder="Full Name" />
     </div>
 
     <div class="field">
       <label for="email">Email Address <span class="tag dom">PII</span></label>
       <input type="email" id="email" name="email"
-             autocomplete="email" placeholder="vedant@example.com" />
+             autocomplete="email"
+             aria-label="email address"
+             placeholder="Email Address" />
     </div>
 
     <div class="field">
       <label for="phone">Mobile Number <span class="tag dom">PII</span></label>
       <input type="tel" id="phone" name="phone"
-             autocomplete="tel" placeholder="+91 9876543210" />
+             autocomplete="tel"
+             aria-label="phone number"
+             placeholder="Mobile Number" />
     </div>
 
     <button class="btn" type="button" id="verifyBtn">Verify Identity</button>
@@ -141,7 +147,7 @@
       ctx.fillText('NAME', 105, 68);
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 15px Inter, system-ui';
-      ctx.fillText('VEDANT RAMESH GHUGE', 105, 86);
+      ctx.fillText('VEDANT BALU GHUGE', 105, 86);
 
       // Aadhaar — PII, visual only
       ctx.fillStyle = '#94a3b8';

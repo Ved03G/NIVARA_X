@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nivara-X — ONNX Benchmark</title>
+  <style>
+    body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 32px; }
+    h1 { color: #38bdf8; font-size: 18px; }
+    .card { background: #1e293b; border-radius: 8px; padding: 20px; margin: 12px 0; }
+    .metric { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
+    .label { color: #94a3b8; }
+    .value { color: #4ade80; font-weight: bold; }
+    .value.warn { color: #fbbf24; }
+    .value.fail { color: #f87171; }
+    button {
+      background: #3b82f6; color: white; border: none; padding: 12px 24px;
+      border-radius: 6px; cursor: pointer; font-size: 14px; margin: 4px;
+    }
+    button:hover { background: #2563eb; }
+    button:disabled { background: #475569; cursor: not-allowed; }
+    #log { background: #0f172a; border-radius: 6px; padding: 16px; font-size: 12px;
+           height: 300px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; }
+    .ok { color: #4ade80; }
+    .warn { color: #fbbf24; }
+    .err { color: #f87171; }
+    .info { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h1>Nivara-X — Phase 2: ONNX Inference Benchmark</h1>
+  <p style="color:#64748b;font-size:13px">MobileNetV2 · ONNX Runtime Web · WebAssembly backend · Off main thread</p>
+
+  <div class="card" id="metrics" style="display:none">
+    <div class="metric"><span class="label">Model</span><span class="value" id="mModel">—</span></div>
+    <div class="metric"><span class="label">Backend</span><span class="value" id="mBackend">—</span></div>
+    <div class="metric"><span class="label">Load time</span><span class="value" id="mLoad">—</span></div>
+    <div class="metric"><span class="label">Inference p50</span><span class="value" id="mP50">—</span></div>
+    <div class="metric"><span class="label">Inference mean</span><span class="value" id="mMean">—</span></div>
+    <div class="metric"><span class="label">Inference min</span><span class="value" id="mMin">—</span></div>
+    <div class="metric"><span class="label">Inference max</span><span class="value" id="mMax">—</span></div>
+    <div class="metric"><span class="label">RAM estimate</span><span class="value" id="mRam">—</span></div>
+    <div class="metric"><span class="label">Gate (< 300ms)</span><span class="value" id="mGate">—</span></div>
+  </div>
+
+  <div style="margin: 16px 0">
+    <button id="btnLoad">Load Model</button>
+    <button id="btnBench" disabled>Run Benchmark (10x)</button>
+    <button id="btnClear">Clear Log</button>
+  </div>
+  <div id="log"></div>
+
+<script type="module">
+  import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/esm/ort.min.js';
+
+  // ── CRITICAL: point ONNX Runtime at CDN for its .wasm binaries ───────────
+  ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+  // Disable multi-threading (requires SharedArrayBuffer / COOP headers)
+  ort.env.wasm.numThreads = 1;
+
+  const MODEL_URL = '../extension/public/models/mobilenet.onnx';
+
+  const log = (msg, cls='info') => {
+    const el = document.getElementById('log');
+    el.innerHTML += `<span class="${cls}">${new Date().toISOString().slice(11,23)}  ${msg}\n</span>`;
+    el.scrollTop = el.scrollHeight;
+  };
+
+  const median = arr => { const s = [...arr].sort((a,b)=>a-b); return s[Math.floor(s.length/2)]; };
+  const mean   = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+
+  let session = null;
+  const RUNS = 10;
+  const INPUT_W = 224, INPUT_H = 224;
+
+  // ── Load ──────────────────────────────────────────────────────────────────
+  document.getElementById('btnLoad').addEventListener('click', async () => {
+    document.getElementById('btnLoad').disabled = true;
+    log('Loading MobileNetV2 ONNX model from local file...');
+    log(`Path: ${MODEL_URL}`, 'info');
+
+    const t0 = performance.now();
+    try {
+      // wasm only — most reliable cross-platform, no CORS/SharedArrayBuffer needed
+      session = await ort.InferenceSession.create(MODEL_URL, {
+        executionProviders: ['wasm'],
+        graphOptimizationLevel: 'all',
+      });
+      const loadMs = performance.now() - t0;
+      log(`Model loaded in ${loadMs.toFixed(0)}ms (backend: WASM)`, 'ok');
+      document.getElementById('mModel').textContent = 'MobileNetV2 (14MB)';
+      document.getElementById('mBackend').textContent = 'WebAssembly';
+      document.getElementById('mLoad').textContent = `${loadMs.toFixed(0)} ms`;
+      document.getElementById('metrics').style.display = 'block';
+      document.getElementById('btnBench').disabled = false;
+    } catch(e) {
+      log(`Load failed: ${e}`, 'err');
+      log('Make sure Live Server is running from b:\\26171\\ root', 'warn');
+      document.getElementById('btnLoad').disabled = false;
+    }
+  });
+
+  // ── Benchmark ─────────────────────────────────────────────────────────────
+  document.getElementById('btnBench').addEventListener('click', async () => {
+    if (!session) return;
+    document.getElementById('btnBench').disabled = true;
+    log(`\nRunning ${RUNS} inference passes on random 224×224 image...`);
+
+    const ramBefore = performance?.memory?.usedJSHeapSize ?? 0;
+    const latencies = [];
+
+    // Random ImageNet-normalised float32 tensor
+    const floats = new Float32Array(3 * INPUT_W * INPUT_H);
+    for(let i=0;i<floats.length;i++) floats[i] = Math.random()*2-1;
+    const tensor = new ort.Tensor('float32', floats, [1,3,INPUT_H,INPUT_W]);
+
+    for(let r=0;r<RUNS;r++) {
+      const t0 = performance.now();
+      const feeds = { [session.inputNames[0]]: tensor };
+      await session.run(feeds);
+      const ms = performance.now() - t0;
+      latencies.push(ms);
+      log(`  Run ${r+1}: ${ms.toFixed(1)}ms`, ms < 300 ? 'ok' : 'warn');
+    }
+
+    const ramAfter  = performance?.memory?.usedJSHeapSize ?? 0;
+    const ramMB = ((ramAfter - ramBefore) / 1e6).toFixed(1);
+    const p50   = median(latencies).toFixed(1);
+    const avg   = mean(latencies).toFixed(1);
+    const mn    = Math.min(...latencies).toFixed(1);
+    const mx    = Math.max(...latencies).toFixed(1);
+    const gate  = parseFloat(p50) < 300;
+
+    log(`\n── Results ──────────────────────────────────────────────`, 'info');
+    log(`  p50  : ${p50} ms  ${gate ? '[PASS]' : '[FAIL]'}`, gate ? 'ok' : 'err');
+    log(`  mean : ${avg} ms`, 'ok');
+    log(`  min  : ${mn} ms`, 'ok');
+    log(`  max  : ${mx} ms`, 'ok');
+    log(`  RAM  : ~${ramMB} MB`, parseFloat(ramMB)<150?'ok':'warn');
+
+    document.getElementById('mP50').textContent    = `${p50} ms`;
+    document.getElementById('mMean').textContent   = `${avg} ms`;
+    document.getElementById('mMin').textContent    = `${mn} ms`;
+    document.getElementById('mMax').textContent    = `${mx} ms`;
+    document.getElementById('mRam').textContent    = `~${ramMB} MB`;
+    document.getElementById('mGate').textContent   = gate ? 'PASS' : 'FAIL';
+    document.getElementById('mGate').className     = `value ${gate ? '' : 'fail'}`;
+
+    document.getElementById('btnBench').disabled = false;
+  });
+
+  document.getElementById('btnClear').addEventListener('click', () => {
+    document.getElementById('log').innerHTML = '';
+  });
+
+  log('Ready. Click "Load Model" to begin.', 'ok');
+</script>
+</body>
+</html>

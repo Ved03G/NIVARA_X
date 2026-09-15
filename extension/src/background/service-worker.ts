@@ -38,14 +38,56 @@ function broadcastStatus() {
   chrome.runtime.sendMessage(msg).catch(() => {/* popup may be closed */});
 }
 
-async function sendToContent(tabId: number, msg: SWToContentMessage) {
-  return chrome.tabs.sendMessage(tabId, msg);
+/** Inject content script into tab programmatically (fallback for pre-existing tabs). */
+async function injectContentScript(tabId: number): Promise<void> {
+  // Always read from current manifest — hash changes on each build
+  const manifest = chrome.runtime.getManifest();
+  const contentFiles = manifest.content_scripts?.[0]?.js ?? [];
+
+  if (contentFiles.length === 0) {
+    throw new Error('[Nivara-X SW] No content scripts defined in manifest');
+  }
+
+  console.log('[Nivara-X SW] Injecting content script:', contentFiles);
+
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: contentFiles,
+  });
+
+  // Wait for script to initialise its message listeners
+  await new Promise(r => setTimeout(r, 400));
+  console.log('[Nivara-X SW] Content script injected successfully into tab', tabId);
+}
+
+async function sendToContent(tabId: number, msg: SWToContentMessage): Promise<any> {
+  try {
+    return await chrome.tabs.sendMessage(tabId, msg);
+  } catch (e: any) {
+    const isConnectionErr = String(e).includes('Receiving end does not exist')
+      || String(e).includes('Could not establish connection');
+    if (isConnectionErr) {
+      console.log('[Nivara-X SW] Content script not found — injecting...');
+      await injectContentScript(tabId);
+      return chrome.tabs.sendMessage(tabId, msg);
+    }
+    throw e;
+  }
+}
+
+// ─── Canvas token parser ──────────────────────────────────────────────────────
+
+/** Extract tokens like [ACCOUNT_NUMBER_1] from server reasoning string. */
+function parseCanvasTokens(reasoning?: string): string[] {
+  if (!reasoning) return [];
+  const matches = reasoning.match(/\[[A-Z_]+_\d+\]/g);
+  return matches ? [...new Set(matches)] : [];
 }
 
 // ─── Agent loop ───────────────────────────────────────────────────────────────
 
 async function runAgentLoop(tabId: number, task: string) {
-  updateStatus({ running: true, step: 'starting', piiDetected: 0, piiRedacted: 0, rawPIISent: 0 });
+  updateStatus({ running: true, step: 'starting', piiDetected: 0, piiRedacted: 0, rawPIISent: 0, canvasDetections: [] });
   const maxSteps = 10;
 
   for (let step = 0; step < maxSteps; step++) {
@@ -62,9 +104,10 @@ async function runAgentLoop(tabId: number, task: string) {
 
     updateStatus({
       step: 'calling server',
-      piiDetected: context.redactionContract.length,
-      piiRedacted: context.redactionContract.length,
-      rawPIISent: 0,
+      piiDetected:       context.piiDetected,
+      piiRedacted:       context.piiRedacted,
+      rawPIISent:        context.rawPIISent,
+      redactionContract: context.redactionContract,
     });
 
     // 2. Send sanitized context to server
@@ -73,7 +116,6 @@ async function runAgentLoop(tabId: number, task: string) {
       const res = await fetch(`${SERVER_URL}/api/agent/context`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // NOTE: spread context first, then override task — prevents context.task:'' from winning
         body: JSON.stringify({ ...context, task: task + (step > 0 ? ` (step ${step + 1})` : '') }),
       });
       if (!res.ok) throw new Error(`Server ${res.status}: ${await res.text()}`);
@@ -83,8 +125,21 @@ async function runAgentLoop(tabId: number, task: string) {
       return;
     }
 
+    // Parse canvas PII tokens the server detected (shown in token pills)
+    const canvasDetections = parseCanvasTokens(agentResponse.reasoning);
+    const totalDetected = context.piiDetected + canvasDetections.length;
+    const totalRedacted = context.piiRedacted + canvasDetections.length;
+
     if (agentResponse.taskComplete && agentResponse.actions.length === 0) {
-      updateStatus({ running: false, step: 'complete' });
+      updateStatus({
+        running: false,
+        step: 'complete',
+        piiDetected:       totalDetected,
+        piiRedacted:       totalRedacted,
+        redactionContract: context.redactionContract,
+        canvasDetections,
+        lastAction:        agentResponse.reasoning,
+      });
       return;
     }
 
@@ -96,12 +151,8 @@ async function runAgentLoop(tabId: number, task: string) {
       const success = await new Promise<boolean>((resolve) => {
         pendingActions.set(actionId, (ok) => resolve(ok));
         sendToContent(tabId, { type: 'EXECUTE_ACTION', action, actionId }).catch(() => resolve(false));
-        // Timeout safety
         setTimeout(() => {
-          if (pendingActions.has(actionId)) {
-            pendingActions.delete(actionId);
-            resolve(false);
-          }
+          if (pendingActions.has(actionId)) { pendingActions.delete(actionId); resolve(false); }
         }, 10_000);
       });
 
@@ -110,12 +161,18 @@ async function runAgentLoop(tabId: number, task: string) {
         return;
       }
 
-      // Small delay between actions for stability
       await new Promise(r => setTimeout(r, 500));
     }
 
     if (agentResponse.taskComplete) {
-      updateStatus({ running: false, step: 'complete' });
+      updateStatus({
+        running: false,
+        step: 'complete',
+        piiDetected:       totalDetected,
+        piiRedacted:       totalRedacted,
+        redactionContract: context.redactionContract,
+        canvasDetections,
+      });
       return;
     }
   }
@@ -181,4 +238,4 @@ chrome.runtime.onMessage.addListener((raw, sender, sendResponse) => {
   return false;
 });
 
-console.log('[PrivacyShield SW] service worker started');
+console.log('[Nivara-X SW] service worker started');

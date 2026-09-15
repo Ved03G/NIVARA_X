@@ -3,229 +3,484 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PrivacyShield</title>
+  <title>Nivara-X</title>
   <style>
+    :root {
+      --bg:       #0c0c0f;
+      --surface:  #131318;
+      --surface2: #1a1a22;
+      --border:   #2a2a35;
+      --border2:  #404050;
+      --blue:     #3b6ef0;
+      --blue-lt:  #5b8af5;
+      --green:    #16a34a;
+      --green-lt: #4ade80;
+      --red:      #ef4444;
+      --amber:    #f59e0b;
+      --text:     #f4f4f5;
+      --text2:    #b4b4c4;
+      --text3:    #7070a0;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
-      width: 340px;
-      padding: 14px;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #1e2535;
-      padding-bottom: 10px;
-    }
-    .title { font-size: 15px; font-weight: 700; color: #60a5fa; }
-    .badge {
-      margin-left: auto;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 99px;
-      background: #1e3a5f;
-      color: #60a5fa;
-    }
-    .section {
-      background: #161c2d;
-      border-radius: 8px;
-      padding: 11px;
-      margin-bottom: 8px;
-      border: 1px solid #1e2535;
-    }
-    .section-title {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #64748b;
-      margin-bottom: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    textarea {
-      width: 100%;
-      background: #0f1117;
-      border: 1px solid #1e2535;
-      border-radius: 6px;
-      color: #e2e8f0;
-      font-family: inherit;
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      width: 360px;
       font-size: 13px;
-      padding: 7px;
-      resize: none;
-      height: 52px;
+      line-height: 1.4;
+      overflow: hidden;
     }
-    textarea:focus { outline: none; border-color: #60a5fa; }
-    .btn {
-      width: 100%;
-      padding: 9px;
-      border-radius: 6px;
-      border: none;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 7px;
-      transition: opacity 0.15s;
-    }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-green { background: #16a34a; color: #fff; }
-    .btn-green:hover { background: #15803d; }
-    .btn-red { background: #991b1b; color: #f87171; font-size: 11px; }
-    .stat-row {
+    /* Hide scrollbar completely */
+    ::-webkit-scrollbar { display: none; }
+
+    /* ── Header ────────────────────────────────────────────── */
+    .header {
+      padding: 14px 16px;
       display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 30px; height: 30px;
+      background: var(--blue);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .brand { flex: 1; }
+    .brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .brand-sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Privacy bar ───────────────────────────────────────── */
+    .privacy-bar {
+      margin: 0;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      font-size: 12px;
-      margin-bottom: 3px;
     }
-    .stat-label { color: #64748b; }
-    .stat-value { font-weight: 600; }
-    .stat-value.good { color: #34d399; }
-    .step-indicator { font-size: 11px; color: #60a5fa; margin-top: 4px; min-height: 15px; }
-    .firewall-ok  { color: #34d399; font-weight: 700; font-size: 11px; text-align: center; padding: 3px; }
-    .firewall-blocked { color: #f87171; font-weight: 700; font-size: 11px; text-align: center; padding: 3px; }
-
-    /* Vault inputs */
-    .vault-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .vault-field label { font-size: 10px; color: #64748b; display: block; margin-bottom: 3px; }
-    .vault-field input {
-      width: 100%;
-      background: #0f1117;
-      border: 1px solid #1e2535;
-      border-radius: 5px;
-      color: #e2e8f0;
-      font-size: 12px;
-      padding: 5px 7px;
+    .privacy-left { display: flex; align-items: center; gap: 10px; }
+    .privacy-indicator {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green-lt);
+      flex-shrink: 0;
     }
-    .vault-field input:focus { outline: none; border-color: #60a5fa; }
-    .vault-field input[type="password"] { letter-spacing: 0.1em; }
-    .vault-saved { font-size: 10px; color: #34d399; text-align: center; margin-top: 4px; display: none; }
+    .privacy-indicator.alert { background: var(--red); }
+    .privacy-label { font-size: 12px; font-weight: 600; color: var(--text); }
+    .privacy-sub   { font-size: 10px; color: var(--text3); margin-top: 1px; }
+    .privacy-right { text-align: right; }
+    .privacy-bytes {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green-lt);
+      font-variant-numeric: tabular-nums;
+    }
+    .privacy-bytes.alert { color: var(--red); }
+    .privacy-bytes-label {
+      font-size: 10px;
+      color: var(--text3);
+    }
 
-    /* Tab bar */
-    .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+    /* ── Tabs ──────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
     .tab {
       flex: 1;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #1e2535;
-      background: #161c2d;
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 9px 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text3);
       cursor: pointer;
       text-align: center;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color .12s;
     }
-    .tab.active { background: #1e3a5f; color: #60a5fa; border-color: #2563eb; }
+    .tab:hover { color: var(--text2); }
+    .tab.active {
+      color: var(--text);
+      border-bottom-color: var(--blue);
+      font-weight: 600;
+    }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+
+    /* ── Content area ──────────────────────────────────────── */
+    .content { padding: 12px; }
+
+    /* ── Section ───────────────────────────────────────────── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 8px;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+
+    /* ── Task input ────────────────────────────────────────── */
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 9px 11px;
+      resize: none;
+      height: 58px;
+      line-height: 1.45;
+    }
+    textarea::placeholder { color: var(--text3); font-size: 12px; }
+    textarea:focus { outline: none; border-color: var(--blue-lt); }
+
+    /* ── Run button ────────────────────────────────────────── */
+    .btn-run {
+      width: 100%;
+      padding: 10px 0;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      letter-spacing: 0.01em;
+      transition: background .12s;
+    }
+    .btn-run:hover:not(:disabled) { background: var(--blue-lt); }
+    .btn-run:disabled { opacity: .45; cursor: not-allowed; }
+
+    .spinner {
+      width: 11px; height: 11px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-line {
+      margin-top: 7px;
+      font-size: 11px;
+      color: var(--text2);
+      min-height: 17px;
+    }
+    .status-line.active { color: var(--blue-lt); }
+    .status-line.ok     { color: var(--green-lt); }
+    .status-line.err    { color: var(--red); }
+
+    /* ── Stats row ─────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .stat-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+    }
+    .stat-val {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-val.amber { color: var(--amber); }
+    .stat-val.green { color: var(--green-lt); }
+    .stat-key { font-size: 11px; color: var(--text2); font-weight: 500; }
+
+    /* ── Token pills ───────────────────────────────────────── */
+    .token-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .token {
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+    }
+    .canvas-token {
+      border-color: rgba(59, 110, 240, 0.4);
+      color: var(--blue-lt);
+      background: rgba(59, 110, 240, 0.1);
+    }
+    .token-empty { font-size: 11px; color: var(--text3); }
+
+    /* ── Last action ───────────────────────────────────────── */
+    .action-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 11px;
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: 11px;
+      color: var(--text2);
+      min-height: 36px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .action-type {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #1a2c55;
+      color: var(--blue-lt);
+      margin-right: 6px;
+    }
+    .action-green { color: var(--green-lt); }
+
+    /* ── Divider ───────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 0;
+    }
+
+    /* ── Vault ─────────────────────────────────────────────── */
+    .vault-note {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .vault-note span { color: var(--green-lt); font-weight: 600; }
+
+    .vault-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+    .vault-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 5px;
+    }
+    .vault-field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 8px 10px;
+      font-family: inherit;
+    }
+    .vault-field input:focus { outline: none; border-color: var(--blue-lt); }
+    .vault-field input::placeholder { color: var(--text3); }
+
+    .btn-save {
+      width: 100%; padding: 9px;
+      margin-top: 10px;
+      border: none; border-radius: 6px;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-save:hover { background: #15803d; }
+
+    .btn-clear {
+      width: 100%; padding: 8px;
+      margin-top: 5px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text3);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+    .vault-msg {
+      font-size: 11px;
+      text-align: center;
+      color: var(--green-lt);
+      margin-top: 6px;
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
   <div class="header">
-    <span style="font-size:18px">🛡</span>
-    <span class="title">PrivacyShield</span>
-    <span class="badge">ON-DEVICE</span>
+    <div class="logo">🛡</div>
+    <div class="brand">
+      <div class="brand-name">Nivara-X</div>
+      <div class="brand-sub">SIH 26171 · On-Device AI</div>
+    </div>
+    <div class="badge" id="agentBadge">IDLE</div>
   </div>
 
-  <!-- Tab bar -->
+  <!-- Privacy bar -->
+  <div class="privacy-bar">
+    <div class="privacy-left">
+      <div class="privacy-indicator" id="privacyDot"></div>
+      <div>
+        <div class="privacy-label" id="privacyLabel">Firewall Active</div>
+        <div class="privacy-sub">No raw PII leaves this device</div>
+      </div>
+    </div>
+    <div class="privacy-right">
+      <div class="privacy-bytes" id="privacyBytes">0 bytes</div>
+      <div class="privacy-bytes-label">leaving device</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" id="tab-agent" onclick="switchTab('agent')">Agent</div>
-    <div class="tab" id="tab-vault" onclick="switchTab('vault')">My Vault</div>
+    <div class="tab active" id="tab-agent">Agent</div>
+    <div class="tab" id="tab-vault">My Vault</div>
   </div>
 
-  <!-- Agent tab -->
+  <!-- Agent panel -->
   <div class="tab-panel active" id="panel-agent">
-    <div class="section">
-      <div class="section-title">Task</div>
-      <textarea id="taskInput" placeholder="e.g. Fill in email and submit the form"></textarea>
-      <button class="btn btn-primary" id="runBtn">▶ RUN AGENT</button>
-      <div class="step-indicator" id="stepIndicator">Idle</div>
-    </div>
+    <div class="content">
 
-    <div class="section">
-      <div class="section-title">Local Perception</div>
-      <div class="stat-row">
-        <span class="stat-label">PII Detected</span>
-        <span class="stat-value" id="piiDetected">—</span>
+      <!-- Task -->
+      <div class="section">
+        <div class="section-label">Task</div>
+        <textarea id="taskInput" placeholder="e.g. Fill in the email field with my email"></textarea>
+        <button class="btn-run" id="runBtn">
+          <span id="runIcon">▶</span>
+          <span id="runLabel">Run Agent</span>
+        </button>
+        <div class="status-line" id="statusLine">Idle</div>
       </div>
-      <div class="stat-row">
-        <span class="stat-label">PII Redacted</span>
-        <span class="stat-value good" id="piiRedacted">—</span>
-      </div>
-    </div>
 
-    <div class="section">
-      <div class="section-title">Privacy Firewall</div>
-      <div class="stat-row">
-        <span class="stat-label">Raw PII Leaving Device</span>
-        <span class="stat-value good" id="rawPIISent">0 bytes</span>
+      <!-- Perception -->
+      <div class="section">
+        <div class="section-label">Local Perception</div>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-val amber" id="piiDetected">—</div>
+            <div class="stat-key">PII Detected</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val green" id="piiRedacted">—</div>
+            <div class="stat-key">PII Redacted</div>
+          </div>
+        </div>
+        <div class="section-label" style="margin-bottom:6px">Redaction Tokens</div>
+        <div class="token-row" id="tokenRow">
+          <span class="token-empty">Run agent to scan page</span>
+        </div>
       </div>
-      <div id="firewallStatus" class="firewall-ok">✓ REQUEST ALLOWED</div>
-    </div>
 
-    <div class="section">
-      <div class="section-title">Last Action</div>
-      <div class="stat-row">
-        <span class="stat-label" id="lastAction" style="word-break:break-all;font-size:11px">—</span>
+      <!-- Last action -->
+      <div class="section">
+        <div class="section-label">Last Action</div>
+        <div class="action-box" id="lastAction">
+          <span style="color:var(--text3)">—</span>
+        </div>
       </div>
+
     </div>
   </div>
 
-  <!-- Vault tab -->
+  <!-- Vault panel -->
   <div class="tab-panel" id="panel-vault">
-    <div class="section">
-      <div class="section-title">
-        My Details
-        <span style="color:#64748b;font-size:10px;font-weight:normal">stored encrypted, never sent</span>
+    <div class="content">
+      <div class="section">
+        <div class="section-label">My Details</div>
+        <div class="vault-note">
+          <span>Stored on-device only.</span> Values are never sent to any server — the agent works with placeholder tokens only.
+        </div>
+        <div class="vault-grid">
+          <div class="vault-field">
+            <label>Full Name</label>
+            <input id="v-name" type="text" placeholder="Your name" autocomplete="off" />
+          </div>
+          <div class="vault-field">
+            <label>Email</label>
+            <input id="v-email" type="email" placeholder="you@example.com" autocomplete="off" />
+          </div>
+          <div class="vault-field">
+            <label>Phone</label>
+            <input id="v-phone" type="tel" placeholder="+91 98765 43210" autocomplete="off" />
+          </div>
+          <div class="vault-field">
+            <label>Date of Birth</label>
+            <input id="v-dob" type="text" placeholder="YYYY-MM-DD" autocomplete="off" />
+          </div>
+          <div class="vault-field">
+            <label>Password</label>
+            <input id="v-password" type="password" placeholder="••••••••" autocomplete="off" />
+          </div>
+          <div class="vault-field">
+            <label>Aadhaar</label>
+            <input id="v-aadhaar" type="text" placeholder="XXXX XXXX XXXX" autocomplete="off" />
+          </div>
+        </div>
+        <button class="btn-save" id="saveVaultBtn">Save to Vault</button>
+        <div class="vault-msg" id="vaultSaved"></div>
+        <button class="btn-clear" id="clearVaultBtn">Clear all vault data</button>
       </div>
-      <div class="vault-grid">
-        <div class="vault-field">
-          <label>Full Name</label>
-          <input id="v-name" type="text" placeholder="Vedant Ghuge" autocomplete="off" />
-        </div>
-        <div class="vault-field">
-          <label>Email</label>
-          <input id="v-email" type="email" placeholder="you@example.com" autocomplete="off" />
-        </div>
-        <div class="vault-field">
-          <label>Phone</label>
-          <input id="v-phone" type="tel" placeholder="+91 9876543210" autocomplete="off" />
-        </div>
-        <div class="vault-field">
-          <label>Date of Birth</label>
-          <input id="v-dob" type="text" placeholder="YYYY-MM-DD" autocomplete="off" />
-        </div>
-        <div class="vault-field">
-          <label>Password</label>
-          <input id="v-password" type="password" placeholder="••••••••" autocomplete="off" />
-        </div>
-        <div class="vault-field">
-          <label>Aadhaar</label>
-          <input id="v-aadhaar" type="text" placeholder="XXXX XXXX XXXX" autocomplete="off" />
-        </div>
-      </div>
-      <button class="btn btn-green" id="saveVaultBtn" onclick="saveVault()">💾 Save to Local Vault</button>
-      <div class="vault-saved" id="vaultSaved">✓ Saved securely on device</div>
-    </div>
-    <div class="section">
-      <div class="section-title">Danger Zone</div>
-      <button class="btn btn-red" id="clearVaultBtn" onclick="clearVault()">🗑 Clear All Vault Data</button>
     </div>
   </div>
 
   <script type="module" src="./popup.ts"></script>
-  <script>
-    function switchTab(name) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('tab-' + name).classList.add('active');
-      document.getElementById('panel-' + name).classList.add('active');
-    }
-  </script>
 </body>
 </html>

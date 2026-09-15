@@ -25,7 +25,7 @@ export async function executeAction(action: BrowserAction): Promise<boolean> {
       case 'TYPE': {
         const el = await findElement(action.target);
         if (!el) throw new Error(`Element not found: ${action.target}`);
-        const realValue = await resolveValue(action.valueRef);
+        const realValue = await resolveValue(action.valueRef, el);
         if (realValue === null) throw new Error(`No value for ref: ${action.valueRef}`);
         const input = el as HTMLInputElement;
         input.focus();
@@ -67,7 +67,7 @@ export async function executeAction(action: BrowserAction): Promise<boolean> {
         throw new Error(`Unknown action type: ${(action as BrowserAction).type}`);
     }
   } catch (err) {
-    console.error('[PrivacyShield] Action failed:', err);
+    console.error('[Nivara-X] Action failed:', err);
     return false;
   }
 }

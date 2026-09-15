@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "PrivacyShield",
+  "name": "Nivara-X",
   "version": "0.1.0",
-  "description": "On-Device Visual Intelligence for Privacy-Preserving Browser Agents — SIH26171",
+  "description": "On-Device Visual Intelligence for Privacy-Preserving Browser Agents - SIH26171",
   "permissions": [
     "activeTab",
     "scripting",
@@ -17,13 +17,19 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "js": ["src/content/hook.ts"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["<all_urls>"],
       "js": ["src/content/index.ts"],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "src/ui/popup/popup.html",
-    "default_title": "PrivacyShield",
+    "default_title": "Nivara-X",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -37,7 +43,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.js", "*.wasm", "*.onnx"],
+      "resources": ["*.js", "*.wasm", "*.onnx", "models/*.onnx"],
       "matches": ["<all_urls>"]
     }
   ]

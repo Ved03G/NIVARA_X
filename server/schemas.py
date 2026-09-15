@@ -1,4 +1,4 @@
-"""Pydantic schemas for the PrivacyShield API.
+"""Pydantic schemas for the Nivara-X API.
 
 The extension sends camelCase JSON (TypeScript convention).
 All models use alias_generator=to_camel so both snake_case and
@@ -79,10 +79,18 @@ class SanitizedElement(BaseModel):
     placeholder: Optional[str]  = None
     disabled:    bool           = False
     visible:     bool           = True
+    has_value:   bool           = False
     rect:        Optional[ElementRect] = None
 
 
 # ─── Request (extension → server) ──────────────────────────────────────────────
+
+class CanvasOcrEntry(BaseModel):
+    model_config = _camel_config()
+    canvas_id:  Optional[str] = None
+    text:       str
+    confidence: float
+
 
 class AgentContextRequest(BaseModel):
     model_config = _camel_config()
@@ -90,7 +98,9 @@ class AgentContextRequest(BaseModel):
     task:               str
     elements:           list[SanitizedElement]
     redaction_contract: list[RedactionToken]
-    screenshot_b64:     Optional[str] = None
+    screenshot_b64:     Optional[str]           = None
+    canvas_ocr_text:    list[CanvasOcrEntry]    = []
+    canvas_images:      list[str]               = []   # base64 PNG per canvas element
     page_url:           str
     timestamp:          int
 

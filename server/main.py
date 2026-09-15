@@ -1,4 +1,4 @@
-"""PrivacyShield FastAPI server."""
+"""Nivara-X FastAPI server."""
 from __future__ import annotations
 import logging
 import time
@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    logger.info("PrivacyShield server starting")
+    logger.info("Nivara-X server starting")
     yield
-    logger.info("PrivacyShield server stopping")
+    logger.info("Nivara-X server stopping")
 
 
 app = FastAPI(
-    title="PrivacyShield Agent Server",
+    title="Nivara-X Agent Server",
     version="0.1.0",
     description="Redaction-aware VLM reasoning for privacy-preserving browser agents",
     lifespan=lifespan,
@@ -55,12 +55,20 @@ async def agent_context(req: AgentContextRequest) -> AgentResponse:
     """
     start = time.perf_counter()
 
+    has_screenshot = req.screenshot_b64 is not None
+    has_ocr = len(req.canvas_ocr_text) > 0
     logger.info(
         f"Agent request | task='{req.task[:80]}' | elements={len(req.elements)} "
         f"| pii_tokens={len(req.redaction_contract)} | url={req.page_url}"
+        f"{' | screenshot=YES' if has_screenshot else ''}"
+        f"{f' | canvas_ocr={len(req.canvas_ocr_text)}' if has_ocr else ''}"
     )
 
-    if len(req.elements) == 0:
+    if has_ocr:
+        for entry in req.canvas_ocr_text:
+            logger.info(f"Canvas OCR | confidence={entry.confidence:.0f}% | text_len={len(entry.text)} chars")
+
+    if len(req.elements) == 0 and not has_screenshot and not has_ocr:
         return AgentResponse(
             actions=[],
             reasoning="No interactive elements found on page.",
