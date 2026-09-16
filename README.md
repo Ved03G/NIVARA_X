@@ -37,7 +37,7 @@ NIVARA-X acts as a **Zero-Trust Privacy Shield**:
 1. **On-Device Perception**: Intercepts DOM nodes and visual `<canvas>` pixels entirely locally.
 2. **Local Redaction**: Scans for PII (Aadhaar, Account Numbers, Balances) and physically draws black boxes over sensitive visual regions before any screenshot is taken.
 3. **Semantic Tokens**: Replaces sensitive text with tokens (e.g., `[ACCOUNT_NUMBER_1]`) so the remote AI can still reason about the page without seeing the actual data.
-4. **Privacy Firewall**: A hard failsafe that mathematically blocks outbound network requests if a zero-day bug causes the redaction engine to miss a target.
+4. **Privacy Firewall**: A final transmission gate that scans outgoing payloads and blocks requests when detected sensitive patterns remain.
 5. **Local Execution (My Vault)**: When the remote AI issues an action (e.g., "Type [EMAIL_1]"), the local engine retrieves the real data from local storage and executes the action safely.
 
 ---
