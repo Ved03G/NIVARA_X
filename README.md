@@ -10,7 +10,7 @@
 ## 🚀 Quick Start Guide for Judges
 
 ### 1. Download the Extension
-Download the pre-compiled extension ZIP from the [Releases page](https://github.com/YOUR_GITHUB_USERNAME/NIVARA-X/releases) or use the `NIVARA-X-Extension.zip` file provided in this repository.
+Download the pre-compiled extension ZIP from the [Releases page](https://github.com/Ved03G/NIVARA_X/releases/tag/v1.0.0) or use the `NIVARA-X-Extension.zip` file provided in this repository.
 
 ### 2. Install in Chrome
 1. Extract `NIVARA-X-Extension.zip` to a folder.
