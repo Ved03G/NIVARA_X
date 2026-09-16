@@ -62,7 +62,11 @@ async function injectContentScript(tabId: number): Promise<void> {
 
 async function sendToContent(tabId: number, msg: SWToContentMessage): Promise<any> {
   try {
-    return await chrome.tabs.sendMessage(tabId, msg);
+    const response = await chrome.tabs.sendMessage(tabId, msg);
+    if (response && response.error) {
+      throw new Error(response.error);
+    }
+    return response;
   } catch (e: any) {
     const isConnectionErr = String(e).includes('Receiving end does not exist')
       || String(e).includes('Could not establish connection');

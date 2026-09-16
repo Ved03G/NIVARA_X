@@ -6,7 +6,6 @@ import type { CanvasCapture } from '../content/capture.js';
 
 export async function buildSanitizedContext(
   elements: MappedElement[],
-  screenshotB64?: string,
   canvasCaptures?: CanvasCapture[],
 ): Promise<SanitizedContext> {
   // 1. Detect PII (DOM + regex signals)
@@ -20,18 +19,7 @@ export async function buildSanitizedContext(
   const firewallResult = runFirewall(payloadStr, detections);
   if (!firewallResult.safe) {
     console.warn('[Nivara-X Firewall] BLOCKED potential PII leak:', firewallResult.reason);
-    return {
-      task: '',
-      elements: [],
-      redactionContract: [],
-      pageUrl: new URL(location.href).origin,
-      timestamp: Date.now(),
-      piiDetected:  detections.length,
-      piiRedacted:  0,
-      rawPIISent:   0,
-      canvasOcrText: [],
-      canvasImages:  [],
-    };
+    throw new Error(`FIREWALL BLOCKED: ${firewallResult.reason}`);
   }
 
   // 4. Canvas images — base64 JPEG (already compressed by capture.ts)
@@ -41,7 +29,6 @@ export async function buildSanitizedContext(
     task: '',   // Set by service worker before sending
     elements: sanitizedElements,
     redactionContract: contract,
-    screenshotB64,
     pageUrl: new URL(location.href).origin,
     timestamp: Date.now(),
     piiDetected:  detections.length,

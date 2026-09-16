@@ -89,25 +89,11 @@ function captureCanvases(): CanvasCapture[] {
  * Observe the current page state:
  *  1. Map all interactive elements (DOM)
  *  2. Capture screenshot (relayed through service worker)
- *  3. Capture canvas images for server-side OCR
- *  4. Sanitize and build the context object
+ *  2. Capture canvas images for server-side OCR
+ *  3. Sanitize and build the context object
  */
 export async function observePage(): Promise<SanitizedContext> {
   const elements = mapInteractiveElements();
-
-  // ── Screenshot via service worker ──────────────────────────────────────────
-  let screenshotB64: string | undefined;
-  try {
-    screenshotB64 = await new Promise<string>((resolve, reject) => {
-      chrome.runtime.sendMessage({ type: 'CAPTURE_SCREENSHOT' }, (resp) => {
-        if (chrome.runtime.lastError) { reject(chrome.runtime.lastError); return; }
-        if (resp?.dataUrl) resolve(resp.dataUrl.split(',')[1] ?? '');
-        else reject(new Error('No dataUrl in response'));
-      });
-    });
-  } catch {
-    screenshotB64 = undefined;
-  }
 
   // ── Canvas capture (zero-dependency, works in all content script contexts) ─
   const canvasCaptures = captureCanvases();
@@ -116,5 +102,5 @@ export async function observePage(): Promise<SanitizedContext> {
       canvasCaptures.map(c => `${c.width}x${c.height}`));
   }
 
-  return buildSanitizedContext(elements, screenshotB64, canvasCaptures);
+  return buildSanitizedContext(elements, canvasCaptures);
 }

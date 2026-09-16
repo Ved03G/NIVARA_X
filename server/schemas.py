@@ -98,7 +98,6 @@ class AgentContextRequest(BaseModel):
     task:               str
     elements:           list[SanitizedElement]
     redaction_contract: list[RedactionToken]
-    screenshot_b64:     Optional[str]           = None
     canvas_ocr_text:    list[CanvasOcrEntry]    = []
     canvas_images:      list[str]               = []   # base64 PNG per canvas element
     page_url:           str

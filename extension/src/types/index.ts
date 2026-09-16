@@ -70,7 +70,6 @@ export interface SanitizedContext {
   task: string;
   elements: MappedElement[];
   redactionContract: RedactionToken[];
-  screenshotB64?: string;
   pageUrl: string;
   timestamp: number;
   // Runtime fields added by sanitizer (not in original minimal spec)

@@ -245,8 +245,6 @@ def build_user_prompt(req: AgentContextRequest) -> str:
         ocr_parts.append(f"  [{label}] (confidence {entry.confidence:.0f}%):\n  {entry.text}")
     ocr_str = ("CANVAS OCR TEXT (visual-only content, not in DOM):\n" + "\n".join(ocr_parts)) if ocr_parts else ""
 
-    screenshot_note = "A screenshot is attached — use it to understand visual-only content." if req.screenshot_b64 else ""
-
     return "\n".join(filter(None, [
         f"TASK: {req.task}",
         f"PAGE: {req.page_url}",
@@ -254,7 +252,6 @@ def build_user_prompt(req: AgentContextRequest) -> str:
         f"REDACTION CONTRACT:\n{contract_str}",
         hint_str,
         ocr_str,
-        screenshot_note,
         "Output JSON only.",
     ]))
 
